@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>RSVP — PRC Laguna Blood Donors Awarding Ceremony</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --red: #d90429;
+      --red-dark: #a8011f;
+      --red-light: #fff0f2;
+      --gold: #b8860b;
+      --gold-light: #fdf8ec;
+      --text: #1a1a2e;
+      --muted: #6c757d;
+      --border: #e0e0e0;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: #f5f5f5;
+      font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--red);
+      padding: 1.25rem 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 18px,
+        rgba(255,255,255,0.03) 18px,
+        rgba(255,255,255,0.03) 36px
+      );
+      pointer-events: none;
+    }
+    .header-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.15rem;
+      color: #fff;
+      margin: 0 0 0.2rem;
+      letter-spacing: 0.01em;
+      position: relative;
+    }
+    .header-sub {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.82);
+      margin: 0;
+      font-weight: 400;
+      position: relative;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .cross-emblem {
+      font-size: 1.8rem;
+      margin-bottom: 0.4rem;
+      display: block;
+      position: relative;
+    }
+
+    /* ── Card ── */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      background: #fff;
+    }
+    .card-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    /* ── Search ── */
+    .search-hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    #searchQuery {
+      border-radius: 8px 0 0 8px !important;
+      border: 1.5px solid var(--border);
+      font-size: 0.95rem;
+      min-height: 48px;
+    }
+    #searchQuery:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(217,4,41,0.1);
+    }
+    .btn-red {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 0 8px 8px 0 !important;
+      min-height: 48px;
+      font-weight: 600;
+      padding: 0 1.4rem;
+      transition: background 0.15s;
+    }
+    .btn-red:hover, .btn-red:active { background: var(--red-dark); color: #fff; }
+    .btn-red:disabled { background: #e88; color: #fff; }
+
+    /* ── Invitee info banner ── */
+    .invitee-banner {
+      background: var(--red-light);
+      border: 1px solid rgba(217,4,41,0.15);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .invitee-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      color: var(--red-dark);
+      margin: 0 0 0.2rem;
+    }
+    .badge-type {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .badge-individual { background: #e3f2fd; color: #0d47a1; }
+    .badge-group { background: #e8f5e9; color: #1b5e20; }
+
+    .award-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold-light);
+      border: 1px solid rgba(184,134,11,0.25);
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.88rem;
+      color: var(--gold);
+      font-weight: 600;
+    }
+    .seat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f3f3;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.88rem;
+      color: #444;
+      font-weight: 600;
+    }
+
+    /* ── Attendance toggle ── */
+    .attend-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .btn-check + .btn {
+      min-height: 48px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px !important;
+      transition: all 0.15s;
+    }
+    .btn-check:checked + .btn-outline-success {
+      background: #198754;
+      color: #fff;
+      border-color: #198754;
+    }
+    .btn-check:checked + .btn-outline-danger {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    /* ── Form fields ── */
+    .form-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.35rem;
+    }
+    .form-control, .form-select {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+      min-height: 46px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(217,4,41,0.1);
+    }
+    .form-text { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── Rep-awardee switch ── */
+    .rep-awardee-card {
+      background: #fffbf0;
+      border: 1px solid rgba(184,134,11,0.2);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+    }
+    .form-check-input:checked {
+      background-color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      min-height: 52px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-submit:hover { background: var(--red-dark); color: #fff; }
+    .btn-submit:active { transform: scale(0.98); color: #fff; }
+    .btn-submit:disabled { background: #ccc; color: #fff; }
+
+    /* ── States ── */
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── Success screen ── */
+    .success-icon { font-size: 3rem; }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      color: var(--red-dark);
+      font-size: 1.4rem;
+    }
+
+    /* ── Browser warning ── */
+    #browserWarning {
+      font-size: 0.82rem;
+      border-radius: 0;
+      margin: 0;
+      display: none;
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      border: none;
+      border-top: 1px dashed var(--border);
+      margin: 1rem 0;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 1.5rem 1rem 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- In-app browser warning -->
+  <div id="browserWarning" class="alert alert-warning">
+    ⚠️ For best results, please open this in <strong>Chrome</strong> or <strong>Safari</strong>, not inside Viber, Facebook, or Gmail.
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <span class="cross-emblem">✚</span>
+    <h1 class="header-title">Philippine Red Cross — Laguna Chapter</h1>
+    <p class="header-sub">Blood Donors Awarding Ceremony · RSVP</p>
+  </header>
+
+  <div class="container py-4 mb-3" style="max-width:580px;">
+
+    <!-- Search Card -->
+    <div id="searchSection" class="card p-4 mb-3">
+      <h2 class="card-section-title mb-1">Find Your Invitation</h2>
+      <p class="search-hint mb-3">Enter your name or organization exactly as written on your invitation, or scan the QR code provided.</p>
+
+      <div class="input-group mb-2">
+        <input type="text" id="searchQuery" class="form-control"
+               placeholder="e.g., Juan dela Cruz or LGU Santa Cruz"
+               autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+        <button class="btn btn-red" type="button" id="searchBtn" onclick="handleSearch()">Search</button>
+      </div>
+
+      <div id="searchFeedback" class="alert alert-danger py-2 mt-2 mb-0 small hidden" role="alert"></div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingState" class="text-center my-4 hidden">
+      <div class="spinner-border text-danger" role="status" style="width:2rem;height:2rem;">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+      <p class="text-muted mt-2 small">Searching our records, please wait…</p>
+    </div>
+
+    <!-- RSVP Card (rendered dynamically) -->
+    <div id="rsvpSection" class="card p-4 hidden"></div>
+
+  </div>
+
+  <footer class="site-footer">
+    Philippine Red Cross — Laguna Chapter, Santa Cruz Branch<br>
+    For assistance, contact: <a href="mailto:lagunablood@redcross.org.ph" style="color:var(--red);">lagunablood@redcross.org.ph</a>
+  </footer>
+
+  <script>
+    /* ─────────────────────────────────────────────
+       CONFIG — replace with your Apps Script URL
+       ───────────────────────────────────────────── */
+    var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjrXvmyE5HMRPVdrtGA0hYDAcmSiIwRGr_GoB0uZ-2LHL_zIebwadfjcvJ28BHcNlP/exec";
+
+    /* ─────────────────────────────────────────────
+       In-app browser detection
+       ───────────────────────────────────────────── */
+    (function () {
+      var ua = navigator.userAgent || '';
+      if (/FBAN|FBAV|Instagram|Viber|WhatsApp|Messenger|Line|Snapchat|GSA/i.test(ua)) {
+        document.getElementById('browserWarning').style.display = 'block';
+      }
+    })();
+
+    /* ─────────────────────────────────────────────
+       Auto-search from QR ?id= param
+       ───────────────────────────────────────────── */
+    window.addEventListener('load', function () {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+      if (id) {
+        document.getElementById('searchQuery').value = id;
+        handleSearch();
+      }
+    });
+
+    /* ── Enter key on search ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('searchQuery').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
+      });
+    });
+
+    /* ─────────────────────────────────────────────
+       SEARCH
+       ───────────────────────────────────────────── */
+    function handleSearch() {
+      var query   = document.getElementById('searchQuery').value.trim();
+      var feedback = document.getElementById('searchFeedback');
+      var loading  = document.getElementById('loadingState');
+      var rsvpCard = document.getElementById('rsvpSection');
+
+      if (!query) {
+        showFeedback(feedback, "Please enter your name or organization to search.");
+        return;
+      }
+
+      feedback.classList.add('hidden');
+      rsvpCard.classList.add('hidden');
+      loading.classList.remove('hidden');
+      document.getElementById('searchBtn').disabled = true;
+
+      fetch(APPS_SCRIPT_URL + "?action=lookup&query=" + encodeURIComponent(query))
+        .then(function (r) { return r.json(); })
+        .then(function (result) {
+          loading.classList.add('hidden');
+          document.getElementById('searchBtn').disabled = false;
+
+          if (result.success) {
+            window.inviteeData = result;
+            renderRSVPForm(result);
+          } else {
+            showFeedback(feedback, result.message || "No record found. Please check your spelling or contact the committee.");
+          }
+        })
+        .catch(function () {
+          loading.classList.add('hidden');
+          document.getElementById('searchBtn').disabled = false;
+          showFeedback(feedback, "Could not connect. Please check your internet and try again.");
+        });
+    }
+
+    /* ─────────────────────────────────────────────
+       RENDER RSVP FORM
+       ───────────────────────────────────────────── */
+    function renderRSVPForm(data) {
+      var rsvpCard = document.getElementById('rsvpSection');
+      var isGroup  = data.type && data.type.toLowerCase() !== 'individual';
+      var seatText = (data.seat && data.seat.toString().trim() !== '' && data.seat !== 'TBA')
+                     ? data.seat : 'To be assigned';
+
+      var html = '';
+
+      /* — Invitee banner — */
+      html += `
+        <div class="invitee-banner mb-4">
+          <p class="invitee-name">${escHtml(data.name)}</p>
+          <span class="badge-type ${isGroup ? 'badge-group' : 'badge-individual'} mb-2 d-inline-block">
+            ${isGroup ? 'Group / Organization' : 'Individual'}
+          </span><br>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <span class="award-pill">🏆 ${escHtml(data.award) || 'Award — TBA'}</span>
+            <span class="seat-pill">🪑 Seat: ${escHtml(seatText)}</span>
+          </div>
+        </div>
+      `;
+
+      /* — Already RSVP'd guard — */
+      if (data.rsvpStatus && data.rsvpStatus !== 'Pending') {
+        html += `
+          <div class="alert alert-info small mb-3">
+            ℹ️ Your RSVP is already recorded as <strong>${escHtml(data.rsvpStatus)}</strong>.
+            You may update it below.
+          </div>
+        `;
+      }
+
+      /* — Attendance choice — */
+      html += `
+        <div class="mb-4">
+          <span class="attend-label">Will you be attending the ceremony?</span>
+          <div class="btn-group w-100" role="group" aria-label="Attendance">
+            <input type="radio" class="btn-check" name="attendanceStatus" id="statusYes" value="Confirmed"
+                   onchange="toggleFormFields(true)" required>
+            <label class="btn btn-outline-success" for="statusYes">👍 Yes, I will attend</label>
+
+            <input type="radio" class="btn-check" name="attendanceStatus" id="statusNo" value="Declined"
+                   onchange="toggleFormFields(false)">
+            <label class="btn btn-outline-danger" for="statusNo">Sorry, cannot attend</label>
+          </div>
+        </div>
+
+        <div id="conditionalFields" class="hidden">
+          <hr class="section-divider">
+      `;
+
+      /* — Name field — */
+      if (!isGroup) {
+        html += `
+          <div class="mb-3">
+            <label class="form-label" for="mainAttendeeName">Confirm your full name</label>
+            <input type="text" class="form-control" id="mainAttendeeName"
+                   value="${escHtml(data.name)}" required>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="mb-3">
+            <label class="form-label" for="mainAttendeeName">Name of official representative</label>
+            <input type="text" class="form-control" id="mainAttendeeName"
+                   placeholder="Full name of the attending representative" required>
+          </div>
+
+          <div class="rep-awardee-card mb-4">
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" role="switch" id="isRepAlsoAwardee">
+              <label class="form-check-label small" for="isRepAlsoAwardee">
+                <strong>The representative is also an individual awardee</strong><br>
+                <span class="text-muted" style="font-size:0.78rem;">
+                  Check this if the representative is personally receiving an individual donor award.
+                </span>
+              </label>
+            </div>
+          </div>
+        `;
+      }
+
+      /* — Companions — hidden until policy is set (maxCompanions > 0) — */
+      if (data.maxCompanions > 0) {
+        html += `
+          <div class="mb-3">
+            <label class="form-label" for="totalCompanions">Number of companions joining</label>
+            <select class="form-select" id="totalCompanions" onchange="toggleCompanionNames(this.value)">
+              <option value="0">No companions (0)</option>
+        `;
+        for (var i = 1; i <= data.maxCompanions; i++) {
+          html += `<option value="${i}">${i} guest${i > 1 ? 's' : ''}</option>`;
+        }
+        html += `
+            </select>
+            <div class="form-text">Your allocation: up to ${data.maxCompanions} companion seat(s).</div>
+          </div>
+          <div id="companionNamesContainer" class="mb-3 hidden">
+            <label class="form-label" for="companionNames">Names of companions</label>
+            <textarea class="form-control" id="companionNames" rows="2"
+              placeholder="Enter names, or write 'To follow' if unconfirmed"></textarea>
+          </div>
+        `;
+      } else {
+        /* Zero companions — hidden inputs so payload is always complete */
+        html += `
+          <input type="hidden" id="totalCompanions" value="0">
+          <input type="hidden" id="companionNames" value="N/A">
+        `;
+      }
+
+      /* — Remarks — */
+      html += `
+          <div class="mb-4">
+            <label class="form-label" for="remarks">Special notes <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" class="form-control" id="remarks"
+                   placeholder="e.g., Vegetarian, Wheelchair access needed">
+          </div>
+        </div><!-- end conditionalFields -->
+
+        <button type="button" class="btn btn-submit w-100 mt-2" id="submitBtn" onclick="submitRSVP()">
+          Submit RSVP
+        </button>
+
+        <div id="submissionFeedback" class="alert alert-danger mt-3 py-2 small hidden"></div>
+      `;
+
+      rsvpCard.innerHTML = html;
+      rsvpCard.classList.remove('hidden');
+      rsvpCard.classList.add('fade-in');
+    }
+
+    /* ─────────────────────────────────────────────
+       TOGGLE HELPERS
+       ───────────────────────────────────────────── */
+    function toggleFormFields(isAttending) {
+      var fields = document.getElementById('conditionalFields');
+      var nameInput = document.getElementById('mainAttendeeName');
+      fields.classList.toggle('hidden', !isAttending);
+      if (nameInput) nameInput.required = isAttending;
+    }
+
+    function toggleCompanionNames(count) {
+      var container = document.getElementById('companionNamesContainer');
+      var input     = document.getElementById('companionNames');
+      var show = parseInt(count) > 0;
+      container.classList.toggle('hidden', !show);
+      if (input) { input.required = show; if (!show) input.value = ''; }
+    }
+
+    /* ─────────────────────────────────────────────
+       SUBMIT
+       ───────────────────────────────────────────── */
+    function submitRSVP() {
+      var statusInput = document.querySelector('input[name="attendanceStatus"]:checked');
+      var feedback    = document.getElementById('submissionFeedback');
+      var submitBtn   = document.getElementById('submitBtn');
+
+      if (!statusInput) {
+        showFeedback(feedback, "Please select whether you will attend or not.");
+        return;
+      }
+
+      var status = statusInput.value;
+
+      if (status === 'Confirmed') {
+        var nameField = document.getElementById('mainAttendeeName');
+        if (nameField && !nameField.value.trim()) {
+          showFeedback(feedback, "Please enter the attendee's name.");
+          return;
+        }
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Submitting…';
+      feedback.classList.add('hidden');
+
+      var isRepEl          = document.getElementById('isRepAlsoAwardee');
+      var companionNamesEl = document.getElementById('companionNames');
+      var remarksEl        = document.getElementById('remarks');
+      var totalCompEl      = document.getElementById('totalCompanions');
+      var mainNameEl       = document.getElementById('mainAttendeeName');
+
+      var payload = {
+        action:            'saveRSVP',
+        inviteId:          window.inviteeData.inviteId,
+        status:            status,
+        mainAttendeeName:  (status === 'Confirmed' && mainNameEl) ? mainNameEl.value.trim() : 'N/A',
+        isRepAlsoAwardee:  (status === 'Confirmed' && isRepEl)    ? (isRepEl.checked ? 'Yes' : 'No') : 'N/A',
+        totalCompanions:   (status === 'Confirmed' && totalCompEl) ? parseInt(totalCompEl.value) : 0,
+        companionNames:    (status === 'Confirmed' && companionNamesEl && companionNamesEl.value) ? companionNamesEl.value.trim() : 'N/A',
+        remarks:           (remarksEl && remarksEl.value) ? remarksEl.value.trim() : 'None'
+      };
+
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (response) {
+          if (response.success) {
+            showSuccessScreen(status);
+          } else {
+            showFeedback(feedback, response.message || "Something went wrong. Please try again.");
+            submitBtn.disabled  = false;
+            submitBtn.innerHTML = 'Submit RSVP';
+          }
+        })
+        .catch(function () {
+          showFeedback(feedback, "Could not connect. Please check your internet and try again.");
+          submitBtn.disabled  = false;
+          submitBtn.innerHTML = 'Submit RSVP';
+        });
+    }
+
+    /* ─────────────────────────────────────────────
+       SUCCESS SCREEN
+       ───────────────────────────────────────────── */
+    function showSuccessScreen(status) {
+      var rsvpCard = document.getElementById('rsvpSection');
+      var isConfirmed = status === 'Confirmed';
+      rsvpCard.innerHTML = `
+        <div class="text-center py-3 fade-in">
+          <div class="success-icon mb-3">${isConfirmed ? '🎉' : '💙'}</div>
+          <h3 class="success-title mb-2">${isConfirmed ? 'You\'re registered!' : 'Thank you for letting us know'}</h3>
+          <p class="text-muted mb-4" style="font-size:0.92rem;">
+            ${isConfirmed
+              ? 'We look forward to celebrating your life-saving contribution with you at the ceremony.'
+              : 'We\'re sorry you\'re unable to attend. Thank you for your dedication to our blood program.'}
+          </p>
+          <hr class="section-divider">
+          <p class="small text-muted mb-1">Questions? Contact us at</p>
+          <a href="mailto:lagunablood@redcross.org.ph" style="color:var(--red);font-weight:600;font-size:0.9rem;">
+            lagunablood@redcross.org.ph
+          </a>
+        </div>
+      `;
+    }
+
+    /* ─────────────────────────────────────────────
+       UTILITIES
+       ───────────────────────────────────────────── */
+    function showFeedback(el, msg) {
+      el.innerText = msg;
+      el.classList.remove('hidden');
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
