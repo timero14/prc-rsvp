@@ -174,10 +174,11 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
         <!-- Invitee check-in -->
         <div id="ciInvitee" class="hidden">
           <div class="search-wrap input-group mb-2">
-            <input type="text" id="ciSearch" class="form-control" placeholder="Search invitee name or org"
+            <input type="text" id="ciSearch" class="form-control" placeholder="Type 2+ characters — results appear automatically"
               autocomplete="off" autocorrect="off" autocapitalize="none">
             <button class="btn btn-red" onclick="doSearch('ci')" id="ciSearchBtn">Search</button>
           </div>
+          <p class="text-muted" style="font-size:.75rem;margin:-4px 0 6px">Results appear as you type · press Enter or tap Search to force</p>
           <div id="ciFeedback" class="alert alert-danger py-2 small hidden"></div>
           <div id="ciLoading" class="loading-overlay hidden"><div class="spinner-border spinner-border-sm text-danger"></div> Searching…</div>
           <div id="ciResults" class="hidden fade-in"></div>
@@ -187,31 +188,50 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
         <!-- Internal check-in -->
         <div id="ciInternal" class="hidden">
           <div class="search-wrap input-group mb-2">
-            <input type="text" id="ciIntSearch" class="form-control" placeholder="Search BOD / Staff / RC143 name"
+            <input type="text" id="ciIntSearch" class="form-control" placeholder="Type 2+ characters — results appear automatically"
               autocomplete="off" autocorrect="off" autocapitalize="none">
             <button class="btn btn-red" onclick="doSearch('ciInt')" id="ciIntSearchBtn">Search</button>
           </div>
+          <p class="text-muted" style="font-size:.75rem;margin:-4px 0 6px">Results appear as you type · press Enter or tap Search to force</p>
           <div id="ciIntFeedback" class="alert alert-danger py-2 small hidden"></div>
           <div id="ciIntLoading" class="loading-overlay hidden"><div class="spinner-border spinner-border-sm text-danger"></div> Searching…</div>
           <div id="ciIntResults" class="hidden fade-in"></div>
           <div id="ciIntConfirm" class="hidden fade-in"></div>
         </div>
 
-        <!-- Walk-in -->
+        <!-- Walk-in / Onsite encode -->
         <div id="ciWalkin" class="hidden">
+          <p class="text-muted small mb-3">Use this for anyone not yet in the system — invitees, BOD, staff, volunteers, or guests who show up onsite.</p>
           <div class="mb-3">
-            <label class="form-label">Attendee name</label>
-            <input type="text" id="wiName" class="form-control" placeholder="Full name">
+            <label class="form-label">Full name <span class="text-danger">*</span></label>
+            <input type="text" id="wiName" class="form-control" placeholder="Full name of attendee">
           </div>
           <div class="mb-3">
-            <label class="form-label">Seat number <span class="text-muted fw-normal">(if available)</span></label>
+            <label class="form-label">Role / Category <span class="text-danger">*</span></label>
+            <select class="form-select" id="wiRole">
+              <option value="">— Select role —</option>
+              <option value="Invitee">Invitee (on invitation list)</option>
+              <option value="BOD">Board of Directors (BOD)</option>
+              <option value="RC143">RC 143 Chairperson</option>
+              <option value="Staff">Staff</option>
+              <option value="Volunteer">Volunteer</option>
+              <option value="Guest">Guest / VIP / Speaker</option>
+              <option value="Walk-in">Walk-in (not on any list)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Position / Title <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" id="wiPosition" class="form-control" placeholder="e.g. Branch Head Santa Cruz, Chairperson Calamba">
+          </div>
+          <div class="mb-3" id="wiSeatWrap">
+            <label class="form-label">Seat number <span class="text-muted fw-normal">(if assigned)</span></label>
             <input type="text" id="wiSeat" class="form-control" placeholder="e.g. Table 5 - Seat B or leave blank">
           </div>
           <div class="mb-3">
             <label class="form-label">Notes <span class="text-muted fw-normal">(optional)</span></label>
             <input type="text" id="wiNotes" class="form-control" placeholder="Any remarks">
           </div>
-          <button class="btn btn-submit" onclick="submitWalkin()">Record Walk-in</button>
+          <button class="btn btn-submit" onclick="submitWalkin()">Record &amp; Mark Arrived</button>
           <div id="wiFeedback" class="mt-2 hidden"></div>
         </div>
       </div>
@@ -260,12 +280,33 @@ function switchTab(t){
   document.getElementById("tab-"+t).classList.add("active");
 }
 
-// ── Keyboard enter ─────────────────────────────────────
+// ── Keyboard + live search wiring ─────────────────────
+var _debounceTimers={};
+function debounceSearch(mode,delay){
+  clearTimeout(_debounceTimers[mode]);
+  _debounceTimers[mode]=setTimeout(function(){doSearch(mode);},delay||400);
+}
+
 document.addEventListener("DOMContentLoaded",function(){
   var map={rsvpSearch:"rsvp",seatSearch:"seat",ciSearch:"ci",ciIntSearch:"ciInt"};
   Object.keys(map).forEach(function(id){
     var el=document.getElementById(id);
-    if(el) el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();doSearch(map[id]);}});
+    if(!el) return;
+    el.addEventListener("keydown",function(e){
+      if(e.key==="Enter"){e.preventDefault();clearTimeout(_debounceTimers[map[id]]);doSearch(map[id]);}
+    });
+    // Live-as-you-type for staff check-in fields only
+    if(map[id]==="ci"||map[id]==="ciInt"){
+      el.addEventListener("input",function(){
+        var q=el.value.trim();
+        if(q.length>=2){ debounceSearch(map[id],350); }
+        else {
+          var resId=map[id]==="ciInt"?"ciIntResults":map[id]+"Results";
+          hide(resId);
+          hide(map[id]==="ciInt"?"ciIntFeedback":map[id]+"Feedback");
+        }
+      });
+    }
   });
   var pi=document.getElementById("pinInput");
   if(pi) pi.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();verifyPin();}});
@@ -683,29 +724,50 @@ function resetInternalCheckin(){
   selectedInternal=null;
 }
 
-// ── Walk-in ────────────────────────────────────────────
+// ── Walk-in / Onsite encode ───────────────────────────
 function submitWalkin(){
-  var name=document.getElementById("wiName").value.trim();
-  var seat=document.getElementById("wiSeat").value.trim();
-  var notes=document.getElementById("wiNotes").value.trim();
-  var fb=document.getElementById("wiFeedback");
-  if(!name){showEl(fb,"Enter the attendee name.");return;}
-  var payload={action:"walkin",name:name,seat:seat,notes:notes,seatType:"invitee"};
+  var name    = document.getElementById("wiName").value.trim();
+  var role    = document.getElementById("wiRole").value;
+  var position= document.getElementById("wiPosition").value.trim();
+  var seat    = document.getElementById("wiSeat").value.trim();
+  var notes   = document.getElementById("wiNotes").value.trim();
+  var fb      = document.getElementById("wiFeedback");
+
+  if(!name){ showEl(fb,"Please enter the attendee name."); return; }
+  if(!role){ showEl(fb,"Please select a role / category."); return; }
+
+  var payload={
+    action   :"walkin",
+    name     :name,
+    role     :role,
+    position :position,
+    seat     :seat,
+    notes    :notes
+  };
+
+  fb.classList.add("hidden");
   fetch(API,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(res){
       if(res.success){
+        // Clear form
         document.getElementById("wiName").value="";
+        document.getElementById("wiRole").value="";
+        document.getElementById("wiPosition").value="";
         document.getElementById("wiSeat").value="";
         document.getElementById("wiNotes").value="";
         fb.className="alert alert-success py-2 small";
-        fb.textContent="✔ Walk-in recorded for "+name;
+        fb.innerHTML="✔ Recorded &amp; marked arrived: <strong>"+esc(name)+"</strong> ("+esc(role)+")"+
+          (res.intId?"<br><span style='font-size:.8rem;color:#555'>ID assigned: "+esc(res.intId)+"</span>":"");
         show("wiFeedback");
       } else {
         fb.className="alert alert-danger py-2 small";
-        showEl(fb,res.message||"Error.");
+        showEl(fb, res.message||"Error. Please try again.");
       }
-    }).catch(function(){showEl(fb,"Connection error.");});
+    }).catch(function(){
+      fb.className="alert alert-danger py-2 small";
+      showEl(fb,"Connection error. Please try again.");
+    });
 }
 
 // ── Utilities ──────────────────────────────────────────
