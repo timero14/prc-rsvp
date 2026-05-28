@@ -564,15 +564,24 @@ function autoCheckRepAward(repName){
       }
 
       if(confirmedMatch){
-        // ✅ Confirmed: name matches + affiliation matches the group
+        // ✅ Name + affiliation match — but ask for confirmation first
+        window._confirmedRepAward = null; // clear until they confirm
         statusEl.className="alert-award mb-2";
-        statusEl.innerHTML="🏆 <strong>Individual award found!</strong><br>"+
+        statusEl.innerHTML=
+          "🏆 <strong>Individual award found!</strong><br>"+
           "<strong>"+esc(confirmedMatch.name)+"</strong> — "+esc(confirmedMatch.award)+"<br>"+
-          "<span style='font-size:.78rem;color:#777'>Affiliation confirmed: "+esc(confirmedMatch.affil)+"</span>";
+          "<span style='font-size:.78rem;color:#777'>Affiliation on record: "+esc(confirmedMatch.affil)+"</span><br><br>"+
+          "<span style='font-size:.86rem'>Is this you?</span>&nbsp;&nbsp;"+
+          "<button type='button' onclick='confirmAwardMatch(true)' "+
+            "style='background:#0f6e56;color:#fff;border:none;border-radius:6px;padding:4px 14px;font-size:.82rem;font-weight:600;cursor:pointer;margin-right:6px'>"+
+            "Yes, that's me</button>"+
+          "<button type='button' onclick='confirmAwardMatch(false)' "+
+            "style='background:#f3f3f3;color:#555;border:1px solid #ccc;border-radius:6px;padding:4px 14px;font-size:.82rem;cursor:pointer'>"+
+            "No, not me</button>";
         show("awardCheckStatus");
         hide("disputeWrap");
-        // Store for submission
-        window._confirmedRepAward = { name: confirmedMatch.name, award: confirmedMatch.award, id: confirmedMatch.inviteId };
+        // Temporarily store the match data for confirmAwardMatch()
+        window._pendingAwardMatch = { name: confirmedMatch.name, award: confirmedMatch.award, id: confirmedMatch.inviteId, affil: confirmedMatch.affil };
 
       } else if(possibleMatch){
         // ⚠️ Fuzzy name match but affiliation is blank or doesn't match group
@@ -603,6 +612,38 @@ function tokenOverlap(a, b){
   if(!at.length||!bt.length) return 0;
   var hits = at.filter(function(w){ return bt.some(function(bw){ return bw.includes(w)||w.includes(bw); }); });
   return hits.length / Math.max(at.length, bt.length);
+}
+
+// Called when user taps Yes / No on the award confirmation prompt
+function confirmAwardMatch(isMe){
+  var statusEl   = document.getElementById("awardCheckStatus");
+  var disputeEl  = document.getElementById("disputeWrap");
+  var disputeMsg = document.getElementById("disputeMsg");
+  var pending    = window._pendingAwardMatch;
+  if(!pending) return;
+
+  if(isMe){
+    // ✅ Confirmed by the user — show clean award notice
+    window._confirmedRepAward = { name: pending.name, award: pending.award, id: pending.id };
+    statusEl.className="alert-award mb-2";
+    statusEl.innerHTML=
+      "✅ 🏆 <strong>Confirmed individual award:</strong> "+esc(pending.award)+"<br>"+
+      "<span style='font-size:.78rem;color:#777'>"+esc(pending.name)+"</span>";
+    show("awardCheckStatus");
+    hide("disputeWrap");
+  } else {
+    // ❌ User says it's not them — clear award, show dispute option
+    window._confirmedRepAward = null;
+    statusEl.className="small text-muted mb-1";
+    statusEl.innerHTML="Noted — the match was rejected. If you believe you have an individual award, use the flag below.";
+    show("awardCheckStatus");
+    disputeMsg.innerHTML=
+      "<strong>⚠️ Match rejected by representative.</strong><br>"+
+      "The system found <strong>"+esc(pending.name)+"</strong> as a possible match but the representative indicated it is not them. "+
+      "If you still believe you have an individual award, flag it so our team can investigate.";
+    show("disputeWrap");
+  }
+  window._pendingAwardMatch = null;
 }
 
 function checkRepAwardee(){ /* legacy stub — logic moved to autoCheckRepAward */ }
