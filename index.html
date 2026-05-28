@@ -98,8 +98,13 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
     <div class="closed-screen">
       <div style="font-size:2rem;margin-bottom:.5rem">🔒</div>
       <h5 style="color:var(--navy);font-family:'Playfair Display',serif">Registration is Closed</h5>
-      <p class="text-muted small mb-2">The RSVP deadline has passed. If you need assistance, please contact us:</p>
-      <a href="tel:+63" style="color:var(--red);font-weight:600" id="contactPhone">📞 Contact the committee</a>
+      <p class="text-muted small mb-2">The RSVP deadline has passed. For assistance please contact your branch:</p>
+      <div style="display:inline-block;text-align:left;font-size:.83rem;line-height:2">
+        <div>📞 <a href="tel:+639175064909" style="color:var(--red);font-weight:600">+63917-506-4909</a> &nbsp;Santa Cruz Branch</div>
+        <div>📞 <a href="tel:+639175124909" style="color:var(--red);font-weight:600">+63917-512-4909</a> &nbsp;Santa Rosa City Branch</div>
+        <div>📞 <a href="tel:+639171734909" style="color:var(--red);font-weight:600">+63917-173-4909</a> &nbsp;Siniloan Branch</div>
+        <div>📞 <a href="tel:+639171924909" style="color:var(--red);font-weight:600">+63917-192-4909</a> &nbsp;Calamba City Branch</div>
+      </div>
     </div>
   </div>
 
@@ -114,10 +119,10 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
          TAB 1 — RSVP
     ══════════════════════════════ -->
     <div class="tab-pane active" id="pane-rsvp">
-      <p class="text-muted small mb-3">Search your name or organization to register your attendance.</p>
+      <p class="text-muted small mb-3">Type your name or organization — results appear as you type.</p>
 
       <div class="search-wrap input-group mb-2">
-        <input type="text" id="rsvpSearch" class="form-control" placeholder="e.g., Juan dela Cruz or LGU Santa Cruz"
+        <input type="text" id="rsvpSearch" class="form-control" placeholder="Type 2+ characters — results appear automatically"
           autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
         <button class="btn btn-red" onclick="doSearch('rsvp')" id="rsvpSearchBtn">Search</button>
       </div>
@@ -135,10 +140,10 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
          TAB 2 — SEAT LOOKUP
     ══════════════════════════════ -->
     <div class="tab-pane" id="pane-seat">
-      <p class="text-muted small mb-3">Seats are assigned after registration closes. Search your name to find your seat.</p>
+      <p class="text-muted small mb-3">Seats are assigned after registration closes. Type your name to find your seat.</p>
 
       <div class="search-wrap input-group mb-2">
-        <input type="text" id="seatSearch" class="form-control" placeholder="Your name or organization"
+        <input type="text" id="seatSearch" class="form-control" placeholder="Type 2+ characters — results appear automatically"
           autocomplete="off" autocorrect="off" autocapitalize="none">
         <button class="btn btn-red" onclick="doSearch('seat')" id="seatSearchBtn">Search</button>
       </div>
@@ -241,8 +246,15 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
 </div>
 
 <footer class="site-footer">
-  Philippine Red Cross — Laguna Chapter, Santa Cruz Branch<br>
-  For assistance: <a href="mailto:lagunablood@redcross.org.ph" style="color:var(--red)">lagunablood@redcross.org.ph</a>
+  <strong style="color:var(--navy);font-size:.8rem">Philippine Red Cross — Laguna Chapter</strong><br>
+  <span style="font-size:.76rem;color:#888">For RSVP assistance, contact your branch:</span>
+  <table style="margin:.5rem auto 0;font-size:.78rem;line-height:1.9;border-collapse:collapse">
+    <tr><td style="padding-right:.4rem;white-space:nowrap">📞 <a href="tel:+639175064909" style="color:var(--red);font-weight:600">+63917-506-4909</a></td><td style="color:#666">Santa Cruz Branch</td></tr>
+    <tr><td style="padding-right:.4rem;white-space:nowrap">📞 <a href="tel:+639175124909" style="color:var(--red);font-weight:600">+63917-512-4909</a></td><td style="color:#666">Santa Rosa City Branch</td></tr>
+    <tr><td style="padding-right:.4rem;white-space:nowrap">📞 <a href="tel:+639171734909" style="color:var(--red);font-weight:600">+63917-173-4909</a></td><td style="color:#666">Siniloan Branch</td></tr>
+    <tr><td style="padding-right:.4rem;white-space:nowrap">📞 <a href="tel:+639171924909" style="color:var(--red);font-weight:600">+63917-192-4909</a></td><td style="color:#666">Calamba City Branch</td></tr>
+    <tr><td style="padding-right:.4rem;padding-top:.25rem;white-space:nowrap">✉️ <a href="mailto:lagunablood@redcross.org.ph" style="color:var(--red);font-weight:600">lagunablood@redcross.org.ph</a></td><td style="color:#666;padding-top:.25rem">Email</td></tr>
+  </table>
 </footer>
 
 <script>
@@ -266,8 +278,11 @@ window.addEventListener("load", function(){
     .then(function(res){
       if(res.closed){
         document.getElementById("closedBanner").classList.remove("hidden");
+        // Only disable the RSVP tab — seat lookup and staff check-in stay open
         document.getElementById("tab-rsvp").disabled = true;
-        document.getElementById("mainCard").classList.add("hidden");
+        document.getElementById("tab-rsvp").title = "Registration is closed";
+        // Auto-switch to Seat Lookup tab so guest sees something useful
+        switchTab("seat");
       }
     }).catch(function(){});
 });
@@ -295,18 +310,17 @@ document.addEventListener("DOMContentLoaded",function(){
     el.addEventListener("keydown",function(e){
       if(e.key==="Enter"){e.preventDefault();clearTimeout(_debounceTimers[map[id]]);doSearch(map[id]);}
     });
-    // Live-as-you-type for staff check-in fields only
-    if(map[id]==="ci"||map[id]==="ciInt"){
-      el.addEventListener("input",function(){
-        var q=el.value.trim();
-        if(q.length>=2){ debounceSearch(map[id],350); }
-        else {
-          var resId=map[id]==="ciInt"?"ciIntResults":map[id]+"Results";
-          hide(resId);
-          hide(map[id]==="ciInt"?"ciIntFeedback":map[id]+"Feedback");
-        }
-      });
-    }
+    // Live-as-you-type for ALL search fields
+    el.addEventListener("input",function(){
+      var q=el.value.trim();
+      if(q.length>=2){ debounceSearch(map[id],350); }
+      else {
+        var resId=map[id]==="ciInt"?"ciIntResults":map[id]+"Results";
+        hide(resId);
+        if(map[id]==="rsvp") hide("rsvpForm");
+        hide(map[id]==="ciInt"?"ciIntFeedback":map[id]+"Feedback");
+      }
+    });
   });
   var pi=document.getElementById("pinInput");
   if(pi) pi.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();verifyPin();}});
@@ -340,7 +354,7 @@ function doSearch(mode){
       hide(ldId);
       setBtnDisabled((mode==="ciInt"?"ciIntSearchBtn":mode+"SearchBtn"),false);
       if(res.success){renderResults(mode,res.results);}
-      else{showFb(mode,res.message||"No results found.");}
+      else{showFb(mode,(res.message||"No results found.")+" Please contact your branch: Santa Cruz +63917-506-4909 · Santa Rosa +63917-512-4909 · Siniloan +63917-173-4909 · Calamba +63917-192-4909");}
     })
     .catch(function(){
       hide(ldId);
@@ -543,7 +557,13 @@ function showSuccessRsvp(status){
     '<h5 class="success-title">'+(isConf?"You're registered!":"Thank you for letting us know")+'</h5>'+
     '<p class="text-muted small">'+(isConf?"We look forward to celebrating your contribution with you.":"Thank you for your dedication to our blood program.")+'</p>'+
     '<hr class="section-divider">'+
-    '<p class="small text-muted mb-0">Questions? <a href="mailto:lagunablood@redcross.org.ph" style="color:var(--red)">lagunablood@redcross.org.ph</a></p>'+
+    '<p class="small text-muted mb-1">Questions? Contact your branch:</p>'+
+    '<div style="font-size:.8rem;line-height:1.85;text-align:left;display:inline-block">'+
+    '<div>📞 <a href="tel:+639175064909" style="color:var(--red)">+63917-506-4909</a> &nbsp;Santa Cruz</div>'+
+    '<div>📞 <a href="tel:+639175124909" style="color:var(--red)">+63917-512-4909</a> &nbsp;Santa Rosa City</div>'+
+    '<div>📞 <a href="tel:+639171734909" style="color:var(--red)">+63917-173-4909</a> &nbsp;Siniloan</div>'+
+    '<div>📞 <a href="tel:+639171924909" style="color:var(--red)">+63917-192-4909</a> &nbsp;Calamba City</div>'+
+    '</div>'+
     '</div>';
 }
 
