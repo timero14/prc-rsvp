@@ -412,7 +412,11 @@ function showRsvpForm(r){
   if(r.branch) html+='<span class="pill pill-branch">📍 '+esc(r.branch)+'</span>';
   html+='</div>';
   html+='<div class="mt-2">';
-  html+='<span class="pill pill-award">🏆 '+(r.award||'Award — TBA')+'</span>';
+  // r.award may be a combined string "Award A · Award B" for multi-award groups
+  var awardParts = r.award ? r.award.split(' · ') : ['Award — TBA'];
+  awardParts.forEach(function(aw){
+    html+='<span class="pill pill-award">🏆 '+esc(aw.trim())+'</span>';
+  });
   html+='<span class="pill pill-seat">🪑 '+esc(seatTxt)+'</span>';
   html+='</div></div>';
 
