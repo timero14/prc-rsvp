@@ -112,7 +112,8 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
     <div class="tab-nav">
       <button class="tab-btn active" onclick="switchTab('rsvp')" id="tab-rsvp">RSVP</button>
       <button class="tab-btn" onclick="switchTab('seat')" id="tab-seat">Seat Lookup</button>
-      <button class="tab-btn" onclick="switchTab('staff')" id="tab-staff">Staff Check-in</button>
+      <button class="tab-btn" onclick="switchTab('program')" id="tab-program">Program</button>
+      <button class="tab-btn" onclick="switchTab('staff')" id="tab-staff">Staff</button>
     </div>
 
     <!-- ══════════════════════════════
@@ -155,7 +156,89 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
     </div>
 
     <!-- ══════════════════════════════
-         TAB 3 — STAFF CHECK-IN
+         TAB 3 — EVENT PROGRAM
+    ══════════════════════════════ -->
+    <div class="tab-pane" id="pane-program">
+      <h6 style="font-family:'Playfair Display',serif;color:var(--navy);margin-bottom:.25rem">
+        Event Program
+      </h6>
+      <p class="text-muted small mb-3">
+        The official program of the Blood Donors Awarding Ceremony.<br>
+        Find your name or organization to see when you will be called.
+      </p>
+
+      <!-- ── PLACEHOLDER — replace src with your image or embed your PDF ── -->
+      <div id="programContent">
+
+        <!-- OPTION A (active): placeholder image -->
+        <div style="border:2px dashed var(--border);border-radius:10px;padding:2.5rem 1rem;
+                    text-align:center;background:#fafafa;color:#aaa">
+          <div style="font-size:2.5rem;margin-bottom:.5rem">📋</div>
+          <p style="font-size:.9rem;font-weight:600;color:#888;margin:0">
+            Program coming soon
+          </p>
+          <p style="font-size:.78rem;color:#bbb;margin:.25rem 0 0">
+            The event program will be posted here once finalized.
+          </p>
+        </div>
+
+        <!--
+        ══════════════════════════════════════════════════════════
+        HOW TO UPDATE THIS SECTION WITH THE REAL PROGRAM
+        ══════════════════════════════════════════════════════════
+
+        OPTION A — Upload as an IMAGE (JPG or PNG):
+        ─────────────────────────────────────────────
+        1. Take a photo or export your program as a JPG/PNG image.
+        2. Upload the image to a free host like:
+             • Google Drive  (right-click → Share → Anyone with link → Copy link)
+               Then change the URL from:
+                 https://drive.google.com/file/d/FILE_ID/view
+               to:
+                 https://drive.google.com/uc?export=view&id=FILE_ID
+             • Imgur (imgur.com) — upload and copy the direct image link
+        3. Replace the placeholder <div> above with:
+
+           <img src="YOUR_IMAGE_URL_HERE"
+                alt="Event Program"
+                style="width:100%;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+
+        ─────────────────────────────────────────────
+        OPTION B — Embed as a PDF:
+        ─────────────────────────────────────────────
+        1. Upload your PDF to Google Drive.
+        2. Open the file → click Share → Anyone with the link → Copy link.
+        3. Get the FILE_ID from the URL:
+             https://drive.google.com/file/d/FILE_ID/view
+        4. Replace the placeholder <div> above with:
+
+           <iframe
+             src="https://drive.google.com/file/d/FILE_ID/preview"
+             style="width:100%;height:600px;border:none;border-radius:10px"
+             allow="autoplay">
+           </iframe>
+
+        ─────────────────────────────────────────────
+        OPTION C — Multiple pages (image per page):
+        ─────────────────────────────────────────────
+        Upload each page as a separate image and stack them:
+
+           <img src="PAGE_1_URL" alt="Program Page 1"
+                style="width:100%;border-radius:10px;margin-bottom:.5rem;
+                       box-shadow:0 2px 8px rgba(0,0,0,.07)">
+           <img src="PAGE_2_URL" alt="Program Page 2"
+                style="width:100%;border-radius:10px;
+                       box-shadow:0 2px 8px rgba(0,0,0,.07)">
+
+        After updating, delete this comment block and the placeholder <div>.
+        ══════════════════════════════════════════════════════════
+        -->
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         TAB 4 — STAFF CHECK-IN
     ══════════════════════════════ -->
     <div class="tab-pane" id="pane-staff">
       <!-- PIN gate -->
