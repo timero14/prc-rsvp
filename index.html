@@ -526,23 +526,7 @@ function showRsvpForm(r){
     html+='<input type="text" class="form-control" id="nominee" placeholder="Nominee name (leave blank if attending yourself)"></div>';
   } else {
     html+='<div class="mb-3"><label class="form-label" for="repName">Official representative name</label>';
-    html+='<input type="text" class="form-control" id="repName" placeholder="Full name of the representative" oninput="onRepNameInput()"></div>';
-    // Award check status — shown automatically as rep types their name
-    html+='<div id="awardCheckStatus" class="hidden"></div>';
-    // Dispute section — shown when we find a fuzzy name match but affiliation doesn't confirm it
-    html+='<div id="disputeWrap" class="hidden">';
-    html+='<div class="alert-dispute" id="disputeMsg"></div>';
-    html+='<div class="form-check mb-3">';
-    html+='<input class="form-check-input" type="checkbox" id="flagDispute">';
-    html+='<label class="form-check-label small" for="flagDispute">Flag this — our team will verify and update the records if confirmed</label>';
-    html+='</div></div>';
-    // Toggle kept only as manual fallback — hidden by default, shown only when no auto-check ran yet
-    html+='<div class="switch-row" id="manualAwardToggle" style="display:none">';
-    html+='<div class="form-check form-switch mb-0">';
-    html+='<input class="form-check-input" type="checkbox" role="switch" id="repIsAwardee">';
-    html+='<label class="form-check-label small" for="repIsAwardee"><strong>I believe I have an individual award</strong><br>';
-    html+='<span class="text-muted" style="font-size:.76rem">Use this only if no result appeared above. Our team will verify your claim.</span></label>';
-    html+='</div></div>';
+    html+='<input type="text" class="form-control" id="repName" placeholder="Full name of the representative"></div>';
   }
 
   html+='<div class="mb-3"><label class="form-label" for="remarks">Notes <span class="text-muted fw-normal">(optional)</span></label>';
@@ -555,14 +539,6 @@ function showRsvpForm(r){
   document.getElementById("rsvpForm").innerHTML=html;
   show("rsvpForm");
   hide("rsvpResults");
-
-  // Wire up manual toggle fallback
-  var repIsAwardeeEl=document.getElementById("repIsAwardee");
-  if(repIsAwardeeEl) repIsAwardeeEl.addEventListener("change",function(){
-    if(this.checked){ show("disputeWrap"); document.getElementById("disputeMsg").innerHTML=
-      "<strong>⚠️ Manual flag.</strong> You indicated you have an individual award. Our team will verify this."; }
-    else hide("disputeWrap");
-  });
 }
 
 function toggleRsvpFields(show){
@@ -571,169 +547,6 @@ function toggleRsvpFields(show){
 
 // ── Auto rep-award check (fires as rep types their name) ─────────
 var _repCheckTimer = null;
-function onRepNameInput(){
-  clearTimeout(_repCheckTimer);
-  var repName = (document.getElementById("repName")||{}).value||"";
-  var statusEl = document.getElementById("awardCheckStatus");
-  var disputeEl = document.getElementById("disputeWrap");
-  var manualEl = document.getElementById("manualAwardToggle");
-  if(!repName.trim()||repName.trim().length < 3){
-    hide("awardCheckStatus");
-    hide("disputeWrap");
-    if(manualEl) manualEl.style.display="";
-    return;
-  }
-  // Debounce 500ms
-  _repCheckTimer = setTimeout(function(){ autoCheckRepAward(repName); }, 500);
-}
-
-function autoCheckRepAward(repName){
-  var statusEl  = document.getElementById("awardCheckStatus");
-  var disputeEl = document.getElementById("disputeWrap");
-  var disputeMsg= document.getElementById("disputeMsg");
-  var manualEl  = document.getElementById("manualAwardToggle");
-
-  // Show loading
-  statusEl.className = "small text-muted mb-2";
-  statusEl.textContent = "Checking award records…";
-  show("awardCheckStatus");
-  hide("disputeWrap");
-  if(manualEl) manualEl.style.display="none";
-
-  // Get the group name being registered (from selectedInvitee)
-  var groupName = (window.selectedInvitee && window.selectedInvitee.name)
-                   ? window.selectedInvitee.name.toLowerCase().trim() : "";
-
-  fetch(API+"?action=lookup&query="+encodeURIComponent(repName))
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      hide("awardCheckStatus");
-      if(manualEl) manualEl.style.display="none";
-
-      // Filter to Individual results only, score >= 50
-      var individuals = (res.results||[]).filter(function(r){
-        return r.type==="Individual" && r.score>=50;
-      });
-
-      if(!individuals.length){
-        // No individual awardee found with similar name at all
-        statusEl.className="alert-dispute small mb-2 py-2";
-        statusEl.innerHTML="ℹ️ No individual award found for this name. If you believe you have one, use the flag below.";
-        show("awardCheckStatus");
-        disputeMsg.innerHTML="<strong>⚠️ Name not found in individual award records.</strong><br>"+
-          "Flag this so our team can check. Please ensure the name entered is your exact full name.";
-        show("disputeWrap");
-        if(manualEl) manualEl.style.display="none";
-        return;
-      }
-
-      // Check each match for affiliation vs group name
-      var confirmedMatch = null;
-      var possibleMatch  = null;
-
-      for(var i=0; i<individuals.length; i++){
-        var ind = individuals[i];
-        var affil = (ind.affil||"").toLowerCase().trim();
-
-        // Affiliation matches the group being registered
-        var affilMatchesGroup = groupName && affil &&
-          (affil.includes(groupName.substring(0,8)) ||
-           groupName.includes(affil.substring(0,8)) ||
-           tokenOverlap(affil, groupName) >= 0.5);
-
-        if(ind.score >= 65 && affilMatchesGroup){
-          confirmedMatch = ind;
-          break;
-        }
-        if(ind.score >= 50 && !possibleMatch){
-          possibleMatch = ind;
-        }
-      }
-
-      if(confirmedMatch){
-        // ✅ Name + affiliation match — but ask for confirmation first
-        window._confirmedRepAward = null; // clear until they confirm
-        statusEl.className="alert-award mb-2";
-        statusEl.innerHTML=
-          "🏆 <strong>Individual award found!</strong><br>"+
-          "<strong>"+esc(confirmedMatch.name)+"</strong> — "+esc(confirmedMatch.award)+"<br>"+
-          "<span style='font-size:.78rem;color:#777'>Affiliation on record: "+esc(confirmedMatch.affil)+"</span><br><br>"+
-          "<span style='font-size:.86rem'>Is this you?</span>&nbsp;&nbsp;"+
-          "<button type='button' onclick='confirmAwardMatch(true)' "+
-            "style='background:#0f6e56;color:#fff;border:none;border-radius:6px;padding:4px 14px;font-size:.82rem;font-weight:600;cursor:pointer;margin-right:6px'>"+
-            "Yes, that's me</button>"+
-          "<button type='button' onclick='confirmAwardMatch(false)' "+
-            "style='background:#f3f3f3;color:#555;border:1px solid #ccc;border-radius:6px;padding:4px 14px;font-size:.82rem;cursor:pointer'>"+
-            "No, not me</button>";
-        show("awardCheckStatus");
-        hide("disputeWrap");
-        // Temporarily store the match data for confirmAwardMatch()
-        window._pendingAwardMatch = { name: confirmedMatch.name, award: confirmedMatch.award, id: confirmedMatch.inviteId, affil: confirmedMatch.affil };
-
-      } else if(possibleMatch){
-        // ⚠️ Fuzzy name match but affiliation is blank or doesn't match group
-        var affilNote = possibleMatch.affil
-          ? "Their affiliation on record is <strong>"+esc(possibleMatch.affil)+"</strong>, which doesn't match your organization."
-          : "No affiliation is recorded for this person.";
-        statusEl.className="small text-muted mb-1";
-        statusEl.innerHTML="Similar name found: <strong>"+esc(possibleMatch.name)+"</strong> ("+esc(possibleMatch.award)+") — "+affilNote;
-        show("awardCheckStatus");
-        disputeMsg.innerHTML="<strong>⚠️ Possible match but not confirmed.</strong><br>"+
-          "We found <strong>"+esc(possibleMatch.name)+"</strong> with a similar name. "+affilNote+
-          "<br>If this is you, flag it below so our team can verify.";
-        show("disputeWrap");
-        window._confirmedRepAward = null;
-      }
-    })
-    .catch(function(){
-      hide("awardCheckStatus");
-      if(manualEl) manualEl.style.display="";
-      window._confirmedRepAward = null;
-    });
-}
-
-// Token overlap ratio for affiliation vs group name matching
-function tokenOverlap(a, b){
-  var at = a.split(/\s+/).filter(function(w){ return w.length>2; });
-  var bt = b.split(/\s+/).filter(function(w){ return w.length>2; });
-  if(!at.length||!bt.length) return 0;
-  var hits = at.filter(function(w){ return bt.some(function(bw){ return bw.includes(w)||w.includes(bw); }); });
-  return hits.length / Math.max(at.length, bt.length);
-}
-
-// Called when user taps Yes / No on the award confirmation prompt
-function confirmAwardMatch(isMe){
-  var statusEl   = document.getElementById("awardCheckStatus");
-  var disputeEl  = document.getElementById("disputeWrap");
-  var disputeMsg = document.getElementById("disputeMsg");
-  var pending    = window._pendingAwardMatch;
-  if(!pending) return;
-
-  if(isMe){
-    // ✅ Confirmed by the user — show clean award notice
-    window._confirmedRepAward = { name: pending.name, award: pending.award, id: pending.id };
-    statusEl.className="alert-award mb-2";
-    statusEl.innerHTML=
-      "✅ 🏆 <strong>Confirmed individual award:</strong> "+esc(pending.award)+"<br>"+
-      "<span style='font-size:.78rem;color:#777'>"+esc(pending.name)+"</span>";
-    show("awardCheckStatus");
-    hide("disputeWrap");
-  } else {
-    // ❌ User says it's not them — clear award, show dispute option
-    window._confirmedRepAward = null;
-    statusEl.className="small text-muted mb-1";
-    statusEl.innerHTML="Noted — the match was rejected. If you believe you have an individual award, use the flag below.";
-    show("awardCheckStatus");
-    disputeMsg.innerHTML=
-      "<strong>⚠️ Match rejected by representative.</strong><br>"+
-      "The system found <strong>"+esc(pending.name)+"</strong> as a possible match but the representative indicated it is not them. "+
-      "If you still believe you have an individual award, flag it so our team can investigate.";
-    show("disputeWrap");
-  }
-  window._pendingAwardMatch = null;
-}
-
-function checkRepAwardee(){ /* legacy stub — logic moved to autoCheckRepAward */ }
 
 function submitRsvp(){
   var statusEl=document.querySelector("input[name='att']:checked");
@@ -744,30 +557,19 @@ function submitRsvp(){
     var repEl=document.getElementById("repName");
     if(repEl&&!repEl.value.trim()){showEl(fb,"Please enter the attendee name.");return;}
   }
-  var repNameEl  = document.getElementById("repName");
-  var nomineeEl  = document.getElementById("nominee");
-  var remarksEl  = document.getElementById("remarks");
-  var repAwardEl = document.getElementById("repIsAwardee");
-  var disputeEl  = document.getElementById("flagDispute");
+  var repNameEl = document.getElementById("repName");
+  var nomineeEl = document.getElementById("nominee");
+  var remarksEl = document.getElementById("remarks");
 
   var finalName = (repNameEl?repNameEl.value.trim():"") || (nomineeEl?nomineeEl.value.trim():"") || "N/A";
-
-  // Determine rep-awardee status from auto-check result or manual toggle
-  var repIsAwardee = "No";
-  if(window._confirmedRepAward) repIsAwardee = "Yes — " + window._confirmedRepAward.award;
-  else if(repAwardEl && repAwardEl.checked) repIsAwardee = "Yes (manual claim)";
-
-  // Disputed: either manual flag checkbox OR possible-match dispute
-  var disputeFlag = "";
-  if(disputeEl && disputeEl.checked) disputeFlag = "Claimed by " + finalName;
 
   var payload={
     action       :"saveRSVP",
     inviteId     :selectedInvitee.inviteId,
     status       :status,
     repName      :status==="Confirmed"?finalName:"N/A",
-    repIsAwardee :repIsAwardee,
-    disputed     :disputeFlag,
+    repIsAwardee :"N/A",
+    disputed     :"",
     remarks      :remarksEl?remarksEl.value.trim():""
   };
 
@@ -780,6 +582,11 @@ function submitRsvp(){
     .then(function(res){
       if(res.success){
         showSuccessRsvp(status);
+      } else if(res.closed){
+        document.getElementById("rsvpForm").innerHTML=
+          '<div class="closed-screen"><div style="font-size:2rem;margin-bottom:.5rem">🔒</div>'+
+          '<h5 style="color:var(--navy);font-family:Playfair Display,serif">Registration is Closed</h5>'+
+          '<p class="text-muted small">'+esc(res.message)+'</p></div>';
       } else {
         showEl(fb,res.message||"Something went wrong. Please try again.");
         setBtnDisabled("rsvpSubmitBtn",false);
