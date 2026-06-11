@@ -100,10 +100,10 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
       <h5 style="color:var(--navy);font-family:'Playfair Display',serif">Registration is Closed</h5>
       <p class="text-muted small mb-2">The RSVP deadline has passed. For assistance please contact your branch:</p>
       <div style="display:inline-block;text-align:left;font-size:.83rem;line-height:2">
-        <div>📞 <a href="tel:+639175064909" style="color:var(--red);font-weight:600">+63917-506-4909</a> &nbsp;Santa Cruz Branch</div>
         <div>📞 <a href="tel:+639175124909" style="color:var(--red);font-weight:600">+63917-512-4909</a> &nbsp;Santa Rosa City Branch</div>
-        <div>📞 <a href="tel:+639171734909" style="color:var(--red);font-weight:600">+63917-173-4909</a> &nbsp;Siniloan Branch</div>
         <div>📞 <a href="tel:+639171924909" style="color:var(--red);font-weight:600">+63917-192-4909</a> &nbsp;Calamba City Branch</div>
+        <div>📞 <a href="tel:+639175064909" style="color:var(--red);font-weight:600">+63917-506-4909</a> &nbsp;Santa Cruz Branch</div>
+        <div>📞 <a href="tel:+639171734909" style="color:var(--red);font-weight:600">+63917-173-4909</a> &nbsp;Siniloan Branch</div>
       </div>
     </div>
   </div>
@@ -112,7 +112,7 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
     <div class="tab-nav">
       <button class="tab-btn active" onclick="switchTab('rsvp')" id="tab-rsvp">RSVP</button>
       <button class="tab-btn" onclick="switchTab('seat')" id="tab-seat">Seat Lookup</button>
-      <button class="tab-btn" onclick="switchTab('program')" id="tab-program">Program</button>
+      <!-- Program tab hidden per team request -->
       <button class="tab-btn" onclick="switchTab('staff')" id="tab-staff">Staff</button>
     </div>
 
@@ -387,7 +387,7 @@ function doSearch(mode){
       hide(ldId);
       setBtnDisabled((mode==="ciInt"?"ciIntSearchBtn":mode+"SearchBtn"),false);
       if(res.success){renderResults(mode,res.results);}
-      else{showFb(mode,(res.message||"No results found.")+" Please contact your branch: Santa Cruz +63917-506-4909 · Santa Rosa +63917-512-4909 · Siniloan +63917-173-4909 · Calamba +63917-192-4909");}
+      else{showFb(mode,(res.message||"No results found.")+" Please contact your branch: Santa Rosa +63917-512-4909 · Calamba +63917-192-4909 · Santa Cruz +63917-506-4909 · Siniloan +63917-173-4909");}
     })
     .catch(function(){
       hide(ldId);
@@ -559,10 +559,10 @@ function showSuccessRsvp(status){
     '<hr class="section-divider">'+
     '<p class="small text-muted mb-1">Questions? Contact your branch:</p>'+
     '<div style="font-size:.8rem;line-height:1.85;text-align:left;display:inline-block">'+
-    '<div>📞 <a href="tel:+639175064909" style="color:var(--red)">+63917-506-4909</a> &nbsp;Santa Cruz</div>'+
     '<div>📞 <a href="tel:+639175124909" style="color:var(--red)">+63917-512-4909</a> &nbsp;Santa Rosa City</div>'+
-    '<div>📞 <a href="tel:+639171734909" style="color:var(--red)">+63917-173-4909</a> &nbsp;Siniloan</div>'+
     '<div>📞 <a href="tel:+639171924909" style="color:var(--red)">+63917-192-4909</a> &nbsp;Calamba City</div>'+
+    '<div>📞 <a href="tel:+639175064909" style="color:var(--red)">+63917-506-4909</a> &nbsp;Santa Cruz</div>'+
+    '<div>📞 <a href="tel:+639171734909" style="color:var(--red)">+63917-173-4909</a> &nbsp;Siniloan</div>'+
     '</div>'+
     '</div>';
 }
