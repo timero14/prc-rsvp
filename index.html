@@ -122,7 +122,7 @@ body{background:#f5f5f5;font-family:'Source Sans 3','Segoe UI',sans-serif;color:
     <div class="tab-pane active" id="pane-rsvp">
       <p class="text-muted small mb-2">Type your name or organization — results appear as you type.</p>
       <div style="background:#fff8e1;border:1px solid rgba(184,134,11,.25);border-radius:8px;padding:.55rem .85rem;font-size:.82rem;color:#5d4037;margin-bottom:.85rem">
-        ⚠️ <strong>One seat per entry.</strong> Due to limited venue capacity. Only one representative or attendee will be admitted per company, organization, or individual award. Please register only one name.
+        ⚠️ <strong>One seat per entry.</strong> Due to limited Venue Capacity. Only one representative or attendee will be admitted per company, organization, or individual award. Please register only one name.
       </div>
 
       <div class="search-wrap input-group mb-2">
@@ -473,13 +473,25 @@ function showRsvpForm(r){
   html+='<hr class="section-divider">';
 
   if(!isGroup){
-    html+='<div class="mb-3"><label class="form-label" for="repName">Confirm your full name</label>';
-    html+='<input type="text" class="form-control" id="repName" value="'+esc(r.name)+'"></div>';
-    html+='<div class="mb-3"><label class="form-label small text-muted fw-normal">Cannot attend personally?</label>';
-    html+='<input type="text" class="form-control" id="nominee" placeholder="Nominee name (leave blank if attending yourself)"></div>';
+    html+='<p class="small text-muted mb-1">Confirm your name or enter your nominee\'s name if you cannot attend personally.</p>';
+    html+='<div class="row g-2 mb-2">';
+    html+='<div class="col-6"><label class="form-label" for="repFirstName">First Name <span class=\'text-danger\'>*</span></label>';
+    html+='<input type="text" class="form-control" id="repFirstName" placeholder="First name" maxlength="25" autocomplete="given-name">';
+    html+='<div class="form-text text-end" id="repFirstCount">0 / 25</div></div>';
+    html+='<div class="col-6"><label class="form-label" for="repLastName">Last Name <span class=\'text-danger\'>*</span></label>';
+    html+='<input type="text" class="form-control" id="repLastName" placeholder="Last name" maxlength="25" autocomplete="family-name">';
+    html+='<div class="form-text text-end" id="repLastCount">0 / 25</div></div>';
+    html+='</div>';
   } else {
-    html+='<div class="mb-3"><label class="form-label" for="repName">Official representative name</label>';
-    html+='<input type="text" class="form-control" id="repName" placeholder="Full name of the representative"></div>';
+    html+='<p class="small text-muted mb-1">Enter the full name of the one official representative attending. Only one person per organization.</p>';
+    html+='<div class="row g-2 mb-2">';
+    html+='<div class="col-6"><label class="form-label" for="repFirstName">Representative First Name <span class=\'text-danger\'>*</span></label>';
+    html+='<input type="text" class="form-control" id="repFirstName" placeholder="First name" maxlength="25" autocomplete="off">';
+    html+='<div class="form-text text-end" id="repFirstCount">0 / 25</div></div>';
+    html+='<div class="col-6"><label class="form-label" for="repLastName">Representative Last Name <span class=\'text-danger\'>*</span></label>';
+    html+='<input type="text" class="form-control" id="repLastName" placeholder="Last name" maxlength="25" autocomplete="off">';
+    html+='<div class="form-text text-end" id="repLastCount">0 / 25</div></div>';
+    html+='</div>';
   }
 
   html+='<div class="mb-3"><label class="form-label" for="remarks">Notes <span class="text-muted fw-normal">(optional)</span></label>';
@@ -492,6 +504,23 @@ function showRsvpForm(r){
   document.getElementById("rsvpForm").innerHTML=html;
   show("rsvpForm");
   hide("rsvpResults");
+
+  // Wire up character counters
+  ["repFirstName","repLastName"].forEach(function(id){
+    var el=document.getElementById(id);
+    var cId=id==="repFirstName"?"repFirstCount":"repLastCount";
+    if(!el)return;
+    function updateCount(){
+      var cnt=el.value.length;
+      var cEl=document.getElementById(cId);
+      if(cEl){
+        cEl.textContent=cnt+" / 25";
+        cEl.style.color=cnt>=25?"var(--red)":"#888";
+      }
+    }
+    el.addEventListener("input",updateCount);
+    updateCount();
+  });
 }
 
 function toggleRsvpFields(show){
@@ -507,14 +536,20 @@ function submitRsvp(){
   if(!statusEl){showEl(fb,"Please select whether you will attend.");return;}
   var status=statusEl.value;
   if(status==="Confirmed"){
-    var repEl=document.getElementById("repName");
-    if(repEl&&!repEl.value.trim()){showEl(fb,"Please enter the attendee name.");return;}
+    var repFn=document.getElementById("repFirstName");
+    var repLn=document.getElementById("repLastName");
+    if(!repFn||!repFn.value.trim()){showEl(fb,"Please enter the first name of the attendee.");return;}
+    if(!repLn||!repLn.value.trim()){showEl(fb,"Please enter the last name of the attendee.");return;}
   }
-  var repNameEl = document.getElementById("repName");
-  var nomineeEl = document.getElementById("nominee");
-  var remarksEl = document.getElementById("remarks");
+  var repFirstEl = document.getElementById("repFirstName");
+  var repLastEl  = document.getElementById("repLastName");
+  var remarksEl  = document.getElementById("remarks");
 
-  var finalName = (repNameEl?repNameEl.value.trim():"") || (nomineeEl?nomineeEl.value.trim():"") || "N/A";
+  var firstName = repFirstEl ? repFirstEl.value.trim() : "";
+  var lastName  = repLastEl  ? repLastEl.value.trim()  : "";
+  var finalName = (firstName && lastName)
+    ? (firstName + " " + lastName)
+    : (firstName || lastName || "N/A");
 
   var payload={
     action       :"saveRSVP",
